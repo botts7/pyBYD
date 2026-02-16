@@ -141,9 +141,39 @@ class HvacStatus(BydBaseModel):
     rapid_increase_temp_state: int | None = None
     rapid_decrease_temp_state: int | None = None
 
+    # --- Third-row seats (from getRefrigeratorNow) ---
+    lr_third_heat_state: SeatHeatVentState | None = None
+    """Left third-row seat heating level."""
+    lr_third_ventilation_state: SeatHeatVentState | None = None
+    """Left third-row seat ventilation level."""
+    rr_third_heat_state: SeatHeatVentState | None = None
+    """Right third-row seat heating level."""
+    rr_third_ventilation_state: SeatHeatVentState | None = None
+    """Right third-row seat ventilation level."""
+
     # --- Refrigerator ---
     refrigerator_state: int | None = None
     refrigerator_door_state: int | None = None
+    refrigerator_temp: str | None = None
+    """Refrigerator temperature (string, ``-1`` = unavailable)."""
+
+    # --- Fan/airflow settings (from getRefrigeratorNow) ---
+    air_temp_level: int | None = None
+    """Air temperature level."""
+    front_air_sum_pattern: int | None = None
+    """Front air distribution pattern."""
+    first_wind: int | None = None
+    """Primary fan speed level."""
+    second_wind: int | None = None
+    """Secondary fan speed level."""
+    first_warm: int | None = None
+    """Primary heater level."""
+    second_warm: int | None = None
+    """Secondary heater level."""
+    time_choice: int | None = None
+    """Climate timer selection."""
+    air_condition_temp_range: int | None = None
+    """A/C temperature range setting."""
 
     # --- Air quality ---
     pm: float | None = None

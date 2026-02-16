@@ -51,6 +51,8 @@ from pybyd.models import (
     WindowState,
     minutes_to_time_span,
 )
+from pybyd.models.feature_toggle import FeatureToggle, FeatureToggles
+from pybyd.models.sentry import SentryModeResult, SentryStatus
 
 try:
     __version__ = version("pybyd")
@@ -86,6 +88,8 @@ __all__ = [
     "DeviceProfile",
     "DoorOpenState",
     "EnergyConsumption",
+    "FeatureToggle",
+    "FeatureToggles",
     "GpsInfo",
     "HvacStatus",
     "LockState",
@@ -95,6 +99,8 @@ __all__ = [
     "RemoteControlResult",
     "SeatClimateParams",
     "SeatHeatVentState",
+    "SentryModeResult",
+    "SentryStatus",
     "SmartChargingSchedule",
     "StearingWheelHeat",
     "TirePressureUnit",

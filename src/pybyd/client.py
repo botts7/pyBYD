@@ -12,15 +12,21 @@ from typing import Any, TypeVar
 
 import aiohttp
 
+from pybyd._api import bookings as _bookings_api
 from pybyd._api import charging as _charging_api
+from pybyd._api import climate_full as _climate_full_api
+from pybyd._api import feature_toggles as _feature_toggles_api
 from pybyd._api import control as _control_api
 from pybyd._api import energy as _energy_api
 from pybyd._api import gps as _gps_api
 from pybyd._api import hvac as _hvac_api
+from pybyd._api import ota as _ota_api
 from pybyd._api import push_notifications as _push_api
 from pybyd._api import realtime as _realtime_api
+from pybyd._api import sentry as _sentry_api
 from pybyd._api import smart_charging as _smart_api
 from pybyd._api import vehicle as _vehicle_api
+from pybyd._api import vehicle_config as _vehicle_config_api
 from pybyd._api import vehicle_settings as _settings_api
 from pybyd._api.login import build_login_request, parse_login_response
 from pybyd._crypto.bangcle import BangcleCodec
@@ -43,9 +49,11 @@ from pybyd.models.control import (
     VerifyControlPasswordResponse,
 )
 from pybyd.models.energy import EnergyConsumption
+from pybyd.models.feature_toggle import FeatureToggles
 from pybyd.models.gps import GpsInfo
 from pybyd.models.hvac import HvacStatus
 from pybyd.models.push_notification import PushNotificationState
+from pybyd.models.sentry import SentryModeResult
 from pybyd.models.realtime import VehicleRealtimeData
 from pybyd.models.smart_charging import SmartChargingSchedule
 from pybyd.models.vehicle import Vehicle
@@ -851,3 +859,56 @@ class BydClient:
     async def rename_vehicle(self, vin: str, *, name: str) -> CommandAck:
         """Rename a vehicle."""
         return await self._authed_call(_settings_api.rename_vehicle, vin, name=name)
+
+    # ------------------------------------------------------------------
+    # Extended endpoints
+    # ------------------------------------------------------------------
+
+    async def get_full_climate_status(self, vin: str) -> HvacStatus:
+        """Fetch full HVAC status via ``/control/getRefrigeratorNow``.
+
+        Returns more fields than :meth:`get_hvac_status` including
+        third-row seats, refrigerator temperature, and fan/airflow settings.
+        """
+        return await self._authed_call(_climate_full_api.fetch_full_climate_status, vin)
+
+    async def get_feature_toggles(self, vin: str) -> FeatureToggles:
+        """Fetch all feature toggles for a vehicle."""
+        return await self._authed_call(_feature_toggles_api.fetch_feature_toggles, vin)
+
+    async def set_feature_toggle(
+        self, vin: str, function_code: str, *, enable: bool,
+    ) -> Any:
+        """Set a single feature toggle on/off."""
+        return await self._authed_call(
+            _feature_toggles_api.set_feature_toggle, vin, function_code, enable=enable,
+        )
+
+    async def trigger_sentry_mode(
+        self,
+        vin: str,
+        *,
+        enable: bool,
+        command_pwd: str | None = None,
+    ) -> SentryModeResult:
+        """Arm or disarm sentry mode.
+
+        Untested — returned ``1009`` on AU region. Requires user's
+        remote control PIN set in the BYD app.
+        """
+        pwd = self._require_command_pwd(command_pwd)
+        return await self._authed_call(
+            _sentry_api.trigger_sentry_mode, vin, enable=enable, command_pwd=pwd,
+        )
+
+    async def get_ota_version(self, vin: str) -> dict[str, Any]:
+        """Fetch OTA firmware version info."""
+        return await self._authed_call(_ota_api.fetch_ota_version, vin)
+
+    async def get_vehicle_config(self, vin: str) -> dict[str, Any]:
+        """Fetch the latest vehicle configuration."""
+        return await self._authed_call(_vehicle_config_api.fetch_vehicle_config, vin)
+
+    async def get_bookings(self, vin: str) -> list[dict[str, Any]]:
+        """Fetch scheduled actions / bookings."""
+        return await self._authed_call(_bookings_api.fetch_bookings, vin)
