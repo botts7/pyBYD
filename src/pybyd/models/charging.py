@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from pybyd.models._base import BydBaseModel, BydTimestamp, is_negative
+from pybyd.models.realtime import ChargingState, ConnectState
 
 
 class ChargingStatus(BydBaseModel):
@@ -25,8 +26,8 @@ class ChargingStatus(BydBaseModel):
     vin: str = ""
     soc: int | None = None
     """State of charge (0-100 percent)."""
-    charging_state: int | None = None
-    connect_state: int | None = None
+    charging_state: ChargingState = ChargingState.UNKNOWN
+    connect_state: ConnectState = ConnectState.UNKNOWN
     wait_status: int | None = None
     full_hour: int | None = None
     full_minute: int | None = None
@@ -35,11 +36,11 @@ class ChargingStatus(BydBaseModel):
 
     @property
     def is_connected(self) -> bool:
-        return self.connect_state is not None and self.connect_state != 0
+        return self.connect_state == ConnectState.CONNECTED
 
     @property
     def is_charging(self) -> bool:
-        return self.charging_state == 1
+        return self.charging_state > 0 and self.charging_state != ChargingState.CONNECTED
 
     @property
     def time_to_full_available(self) -> bool:

@@ -8,7 +8,7 @@ from typing import Any, ClassVar
 from pydantic import model_validator
 
 from pybyd._constants import celsius_to_scale
-from pybyd.models._base import COMMON_KEY_ALIASES, BydBaseModel, BydEnum, is_temp_sentinel
+from pybyd.models._base import COMMON_KEY_ALIASES, BydBaseModel, BydEnum, is_negative, is_temp_sentinel
 from pybyd.models.realtime import AirCirculationMode, SeatHeatVentState, StearingWheelHeat
 
 __all__ = [
@@ -80,6 +80,7 @@ class HvacStatus(BydBaseModel):
 
     _SENTINEL_RULES: ClassVar[dict[str, Callable[..., bool]]] = {
         "temp_in_car": is_temp_sentinel,
+        "refrigerator_temp": is_negative,
     }
 
     # --- A/C state ---
@@ -135,9 +136,27 @@ class HvacStatus(BydBaseModel):
     rapid_increase_temp_state: int | None = None
     rapid_decrease_temp_state: int | None = None
 
+    # --- Third-row seat heating / ventilation (3-row vehicles only) ---
+    lr_third_heat_state: SeatHeatVentState | None = None
+    """Third-row left seat heating level (unconfirmed)."""
+    lr_third_ventilation_state: SeatHeatVentState | None = None
+    """Third-row left seat ventilation level (unconfirmed)."""
+    rr_third_heat_state: SeatHeatVentState | None = None
+    """Third-row right seat heating level (unconfirmed)."""
+    rr_third_ventilation_state: SeatHeatVentState | None = None
+    """Third-row right seat ventilation level (unconfirmed)."""
+
     # --- Refrigerator ---
     refrigerator_state: int | None = None
     refrigerator_door_state: int | None = None
+    refrigerator_temp: float | None = None
+    """Refrigerator temperature (°C). -1 stripped to None by sentinel rules."""
+
+    # --- Extended climate fields ---
+    air_temp_level: int | None = None
+    """Air temperature level code (unconfirmed)."""
+    air_condition_temp_range: int | None = None
+    """A/C temperature range setting (unconfirmed)."""
 
     # --- Air quality ---
     pm: float | None = None
